@@ -3,7 +3,7 @@
     <div class="exchanger-form__controls">
       <div class="exchanger-form__control">
         <field-select v-model="state.givenSum.select">
-          <option v-for="cur in currencies" :key="cur">
+          <option v-for="cur in currencies" :key="cur" :selected="cur === 'USD'">
             {{ cur.toUpperCase() }}
           </option>
         </field-select>
@@ -19,7 +19,7 @@
 
       <div class="exchanger-form__control">
         <field-select v-model="state.receivedSum.select">
-          <option v-for="cur in currencies" :key="cur">
+          <option v-for="cur in currencies" :key="cur" :selected="cur === 'BTC'">
             {{ cur.toUpperCase() }}
           </option>
         </field-select>
@@ -43,7 +43,6 @@
 
 <script>
 import {reserve} from "@/helpers/reserve";
-import {DEFAULT_CURRENCY} from "@/constants/currency-constant";
 import {emitter} from "@/helpers/emitter";
 import { required, numeric, minValue } from "@vuelidate/validators";
 import { reactive } from 'vue'
@@ -54,6 +53,8 @@ import FieldInput from "@/components/FieldInput";
 import isLimitedValue from "@/mixins/validation.mixin";
 import {EVENTS_NAME} from "@/constants/emit-constants";
 
+const URL = "https://api.apilayer.com/exchangerates_data/latest?symbols=USD%2C%20EUR%2C%20UAH%2C%20GBP%2C%20BTC%2C%20ETH%2C%20BNB%2C%20XRP&base=UAH"
+
 export default {
   components: {FieldInput, FieldSelect },
   mixins: [isLimitedValue],
@@ -63,11 +64,11 @@ export default {
     const state = reactive({
       givenSum: {
         value: '',
-        select: '',
+        select: 'USD',
       },
       receivedSum: {
         value: '',
-        select: '',
+        select: 'BTC',
       }
     })
 
@@ -90,10 +91,27 @@ export default {
     return {
       reserved: reserve,
       routes: ROUTES_NAME,
-      currencies: Object.keys(DEFAULT_CURRENCY),
+      currencies: [],
+      currencyList: {},
     }
   },
   methods: {
+    async getData() {
+      const myHeaders = new Headers();
+      myHeaders.append("apikey", "7HTulfSuhmq8R2YcSrTB0h8V5IXxVK60");
+
+      const requestOptions = {
+        method: 'GET',
+        redirect: 'follow',
+        headers: myHeaders
+      };
+
+      await fetch(URL, requestOptions)
+          .then(response => response.json())
+          .then(result => this.currencyList = result.rates)
+          .catch(error => alert(error.message));
+      this.currencies = Reflect.ownKeys(this.currencyList)
+    },
     enterGivenInput() {
       !isNaN(this.conventTo) ?
       this.state.receivedSum.value = this.conventTo : this.state.receivedSum.value = 'Error';
@@ -107,7 +125,7 @@ export default {
       this.v$.receivedSum.value.$touch();
     },
     findRate() {
-      return DEFAULT_CURRENCY[this.curGiven] / DEFAULT_CURRENCY[this.curReceived];
+      return this.currencyList[this.curGiven] / this.currencyList[this.curReceived];
     },
     findReserve() {
       const curReceived = this.state.receivedSum.select.toLowerCase();
@@ -119,7 +137,7 @@ export default {
     },
     selectCurrency() {
       if (this.state.givenSum.select && this.state.receivedSum.select) {
-        const rate = `1 ${this.state.givenSum.select} = ${this.findRate()} ${this.state.receivedSum.select}`;
+        const rate = `1 ${this.state.givenSum.select} = ${1 / this.findRate()} ${this.state.receivedSum.select}`;
         emitter.emit(EVENTS_NAME.sendRate, rate);
         if (isNaN(this.state.givenSum.value)) this.enterReceivedInput(this.state.receivedSum.value);
         if (isNaN(this.state.receivedSum.value)) this.enterGivenInput(this.state.givenSum.value);
@@ -132,10 +150,10 @@ export default {
   },
   computed: {
     curGiven() {
-      return this.state.givenSum.select.toLowerCase();
+      return this.state.givenSum.select.toUpperCase();
     },
     curReceived() {
-      return this.state.receivedSum.select.toLowerCase();
+      return this.state.receivedSum.select.toUpperCase();
     },
     errorReceivedMessage() {
       return this.v$.receivedSum.value.$errors[0]?.$message;
@@ -147,14 +165,18 @@ export default {
       return this.isLimitedValue(this.state.receivedSum.value, this.reserved[this.curReceived]);
     },
     conventTo() {
-      return this.state.givenSum.value * this.findRate();
+      return this.state.givenSum.value / this.findRate();
     },
     conventFrom() {
-      return this.state.receivedSum.value / this.findRate();
+      return this.state.receivedSum.value * this.findRate();
     }
+  },
+  mounted() {
+    this.getData()
   },
   updated() {
     this.selectCurrency()
+    this.enterGivenInput()
   }
 }
 </script>

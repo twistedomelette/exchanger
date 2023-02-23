@@ -1,7 +1,6 @@
 <template>
   <header class="exchanger-header">
     <h1 class="exchanger-header__title">Exchanger</h1>
-    <div class="exchanger-header__check-id">Check ID</div>
   </header>
 </template>
 
@@ -22,8 +21,5 @@
   height: 4rem;
   background-color: $exchanger-header-background;
   color: $exchanger-header-text;
-}
-.exchanger-header__check-id {
-  font-size: 0.8rem;
 }
 </style>

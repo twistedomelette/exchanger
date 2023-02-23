@@ -2,7 +2,6 @@
   <div class="field-select">
     <small class="field-select__title">Отдайте</small>
     <select class="field-select__select"
-            :value="modelValue"
             @input="updateValueModel"
     >
       <slot></slot>
