@@ -1,0 +1,30 @@
+@import "app-colors";
+
+// field-input
+$field-input-invalid-text-text: $red;
+$field-input-invalid-input-text: $red;
+$field-input-invalid-input-border: $red;
+
+// exchange-footer
+$exchange-footer-rate-text: $gray;
+
+// exchanger-form
+$exchanger-form-button-border: $gray;
+$exchanger-form-button-link-text: $black;
+$exchanger-form-button-link-background: $light-gray;
+
+// exchanger-header
+$exchanger-header-background: $dark-blue;
+$exchanger-header-text: $white;
+
+// error-path
+$error-path-link-border: $black;
+$error-path-link-text: $black;
+
+// exchanger
+$exchanger-content-title-text: $dark-blue;
+
+// fields
+$field-border: $black;
+$field-border-focus: $dark-blue;
+$field-background: $black-0;

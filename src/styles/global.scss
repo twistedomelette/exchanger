@@ -1,0 +1,20 @@
+@import "app-variables";
+*,
+*:after,
+*:before{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+input, select{
+  border: 0;
+  border-bottom: 1px solid $field-border;
+  background-color: $field-background;
+  outline: 0;
+}
+input:focus{
+  border: 0;
+  border-bottom: 1px solid $field-border-focus;
+  background-color: $black-0;
+  outline: 0;
+}
